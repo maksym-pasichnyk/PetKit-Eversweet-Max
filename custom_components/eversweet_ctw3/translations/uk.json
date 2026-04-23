@@ -1,0 +1,102 @@
+{
+    "config": {
+        "flow_title": "{name}",
+        "step": {
+            "user": {
+                "title": "Виберіть пристрій CTW3",
+                "description": "Оберіть Petkit_CTW3, знайдений Bluetooth-стеком Home Assistant.",
+                "data": {
+                    "address": "Bluetooth-пристрій"
+                }
+            },
+            "confirm": {
+                "title": "Авторизація {name}",
+                "description": "Введіть 16-значний hex-секрет, що видає PetKit cloud після привʼязки пристрою.\n\nПристрій: {name} ({address})",
+                "data": {
+                    "secret": "Секрет (hex)",
+                    "name": "Назва пристрою"
+                }
+            }
+        },
+        "error": {
+            "invalid_secret": "Секрет має бути 16 hex-символів (8 байтів)."
+        },
+        "abort": {
+            "already_configured": "Пристрій вже налаштований.",
+            "not_supported": "Цей BLE-пристрій не є Petkit CTW3.",
+            "no_devices_found": "Не знайдено жодного неналаштованого Petkit CTW3."
+        }
+    },
+    "entity": {
+        "sensor": {
+            "battery": {"name": "Батарея"},
+            "battery_voltage": {"name": "Напруга батареї"},
+            "supply_voltage": {"name": "Напруга DC"},
+            "filter_percent": {"name": "Залишок фільтра"},
+            "pump_time_today": {"name": "Помпа сьогодні"},
+            "pump_time_total": {"name": "Помпа всього"},
+            "mode": {"name": "Режим"},
+            "run_status": {"name": "Статус роботи"},
+            "module_status": {"name": "Статус модуля"},
+            "firmware": {"name": "Прошивка"},
+            "last_drink": {"name": "Останнє пиття"},
+            "restart_times": {"name": "Кількість перезапусків"},
+            "run_time_seconds": {"name": "Час роботи (журнал)"},
+            "pump_times_total": {"name": "Цикли помпи (журнал)"}
+        },
+        "binary_sensor": {
+            "lack_water": {"name": "Мало води"},
+            "low_battery": {"name": "Низький заряд"},
+            "filter_warning": {"name": "Замінити фільтр"},
+            "breakdown": {"name": "Несправність"},
+            "night_dnd": {"name": "Нічний режим активний"},
+            "dc_connected": {"name": "Підключено DC"},
+            "running": {"name": "Працює"},
+            "pet_detected": {"name": "Виявлено вихованця"}
+        },
+        "switch": {
+            "power": {"name": "Живлення"},
+            "pause": {"name": "Пауза"},
+            "lamp_ring": {"name": "Підсвітка"},
+            "dnd": {"name": "Не турбувати"},
+            "child_lock": {"name": "Блокування від дітей"},
+            "smart_inductive": {"name": "Індуктивний сенсор (Smart)"},
+            "battery_inductive": {"name": "Індуктивний сенсор (Battery)"}
+        },
+        "select": {
+            "mode": {
+                "name": "Режим",
+                "state": {
+                    "standard": "Стандартний",
+                    "intermittent": "Інтервальний",
+                    "battery": "Батарея"
+                }
+            }
+        },
+        "button": {
+            "reset_filter": {"name": "Скинути лічильник фільтра"},
+            "sync_history": {"name": "Синхронізувати історію"}
+        },
+        "number": {
+            "smart_work_minutes": {"name": "Smart: час роботи"},
+            "smart_sleep_minutes": {"name": "Smart: час сну"},
+            "battery_work_seconds": {"name": "Battery: час роботи"},
+            "battery_sleep_seconds": {"name": "Battery: час сну"},
+            "lamp_brightness": {"name": "Яскравість підсвітки"}
+        }
+    },
+    "services": {
+        "write_light_schedule": {
+            "name": "Записати розклад підсвітки",
+            "description": "Перезапис розкладу підсвітки (cmd 225)."
+        },
+        "write_dnd_schedule": {
+            "name": "Записати розклад DND",
+            "description": "Перезапис розкладу «Не турбувати» (cmd 226)."
+        },
+        "sync_history": {
+            "name": "Синхронізувати історію",
+            "description": "Завантажити потоковий workData з пристрою (cmd 212)."
+        }
+    }
+}

@@ -1,0 +1,54 @@
+write_light_schedule:
+  name: Write light schedule
+  description: Overwrite the lamp-ring schedule (cmd 225).
+  fields:
+    device_id:
+      name: Device
+      required: true
+      selector:
+        device:
+          integration: eversweet_ctw3
+    enabled:
+      name: Enabled
+      required: true
+      default: true
+      selector:
+        boolean:
+    entries:
+      name: Entries
+      description: List of {start, end, weekday_mask} (start/end are minutes 0..1439, weekday_mask bitmask bit0=Mon..bit6=Sun).
+      selector:
+        object:
+
+write_dnd_schedule:
+  name: Write do-not-disturb schedule
+  description: Overwrite the DND schedule (cmd 226).
+  fields:
+    device_id:
+      name: Device
+      required: true
+      selector:
+        device:
+          integration: eversweet_ctw3
+    enabled:
+      name: Enabled
+      required: true
+      default: true
+      selector:
+        boolean:
+    entries:
+      name: Entries
+      description: List of {start, end, weekday_mask} (start/end are minutes 0..1439).
+      selector:
+        object:
+
+sync_history:
+  name: Sync drinking history
+  description: Pull streamed workData records from the device (cmd 212).
+  fields:
+    device_id:
+      name: Device
+      required: true
+      selector:
+        device:
+          integration: eversweet_ctw3

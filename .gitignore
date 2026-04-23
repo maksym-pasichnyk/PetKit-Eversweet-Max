@@ -1,0 +1,7 @@
+.DS_Store
+
+.venv
+
+__pycache__
+
+CTW3_Protocol_Reference.md

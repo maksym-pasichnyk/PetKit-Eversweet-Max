@@ -1,0 +1,102 @@
+{
+    "config": {
+        "flow_title": "{name}",
+        "step": {
+            "user": {
+                "title": "Select CTW3 device",
+                "description": "Pick the Petkit_CTW3 device visible to Home Assistant's Bluetooth stack.",
+                "data": {
+                    "address": "Bluetooth device"
+                }
+            },
+            "confirm": {
+                "title": "Authenticate {name}",
+                "description": "Enter the 16-character hex secret issued by the PetKit cloud after device binding.\n\nDevice: {name} ({address})",
+                "data": {
+                    "secret": "Secret (hex)",
+                    "name": "Device name"
+                }
+            }
+        },
+        "error": {
+            "invalid_secret": "Secret must be 16 hex characters (8 bytes)."
+        },
+        "abort": {
+            "already_configured": "Device is already configured.",
+            "not_supported": "This Bluetooth device is not a Petkit CTW3.",
+            "no_devices_found": "No unconfigured Petkit CTW3 devices were discovered."
+        }
+    },
+    "entity": {
+        "sensor": {
+            "battery": {"name": "Battery"},
+            "battery_voltage": {"name": "Battery voltage"},
+            "supply_voltage": {"name": "DC supply voltage"},
+            "filter_percent": {"name": "Filter remaining"},
+            "pump_time_today": {"name": "Pump runtime today"},
+            "pump_time_total": {"name": "Pump runtime total"},
+            "mode": {"name": "Mode"},
+            "run_status": {"name": "Run status"},
+            "module_status": {"name": "Module status"},
+            "firmware": {"name": "Firmware"},
+            "last_drink": {"name": "Last drink"},
+            "restart_times": {"name": "Restart count"},
+            "run_time_seconds": {"name": "Uptime (log)"},
+            "pump_times_total": {"name": "Pump cycles (log)"}
+        },
+        "binary_sensor": {
+            "lack_water": {"name": "Lack of water"},
+            "low_battery": {"name": "Low battery"},
+            "filter_warning": {"name": "Replace filter"},
+            "breakdown": {"name": "Breakdown"},
+            "night_dnd": {"name": "Night DND active"},
+            "dc_connected": {"name": "DC connected"},
+            "running": {"name": "Running"},
+            "pet_detected": {"name": "Pet detected"}
+        },
+        "switch": {
+            "power": {"name": "Power"},
+            "pause": {"name": "Pause"},
+            "lamp_ring": {"name": "Lamp ring"},
+            "dnd": {"name": "Do-not-disturb"},
+            "child_lock": {"name": "Child lock"},
+            "smart_inductive": {"name": "Smart inductive sensor"},
+            "battery_inductive": {"name": "Battery inductive sensor"}
+        },
+        "select": {
+            "mode": {
+                "name": "Mode",
+                "state": {
+                    "standard": "Standard",
+                    "intermittent": "Intermittent",
+                    "battery": "Battery"
+                }
+            }
+        },
+        "button": {
+            "reset_filter": {"name": "Reset filter"},
+            "sync_history": {"name": "Sync drinking history"}
+        },
+        "number": {
+            "smart_work_minutes": {"name": "Smart mode work time"},
+            "smart_sleep_minutes": {"name": "Smart mode sleep time"},
+            "battery_work_seconds": {"name": "Battery mode work time"},
+            "battery_sleep_seconds": {"name": "Battery mode sleep time"},
+            "lamp_brightness": {"name": "Lamp brightness"}
+        }
+    },
+    "services": {
+        "write_light_schedule": {
+            "name": "Write light schedule",
+            "description": "Overwrite the lamp-ring schedule (cmd 225)."
+        },
+        "write_dnd_schedule": {
+            "name": "Write DND schedule",
+            "description": "Overwrite the DND schedule (cmd 226)."
+        },
+        "sync_history": {
+            "name": "Sync drinking history",
+            "description": "Pull streamed workData records from the device (cmd 212)."
+        }
+    }
+}

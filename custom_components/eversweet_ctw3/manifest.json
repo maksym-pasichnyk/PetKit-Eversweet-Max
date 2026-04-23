@@ -1,0 +1,20 @@
+{
+    "domain": "eversweet_ctw3",
+    "name": "PetKit Eversweet Max Smart (CTW3)",
+    "version": "1.0.0",
+    "codeowners": [],
+    "config_flow": true,
+    "dependencies": ["bluetooth_adapters"],
+    "documentation": "https://github.com/local/eversweet_ctw3",
+    "iot_class": "local_polling",
+    "issue_tracker": "https://github.com/local/eversweet_ctw3/issues",
+    "requirements": [
+        "bleak>=0.21.0",
+        "bleak-retry-connector>=3.5.0"
+    ],
+    "bluetooth": [
+        {
+            "local_name": "Petkit_CTW3*"
+        }
+    ]
+}
