@@ -42,6 +42,7 @@ from .const import (
     CMD_WRITE_DND_SCHEDULE,
     CMD_WRITE_LIGHT_SCHEDULE,
     CONNECT_TIMEOUT,
+    CONTROL_CHAR_UUID,
     DATA_CHAR_UUID,
     DEFAULT_MTU,
     MODE_BATTERY,
@@ -287,7 +288,7 @@ class CTW3BleClient:
         raw = encode_command(cmd, frame_type, seq, data)
         _LOGGER.debug("-> cmd=%d type=%d seq=%d data=%s", cmd, frame_type, seq, data.hex())
         async with self._write_lock:
-            await self._client.write_gatt_char(DATA_CHAR_UUID, raw, response=True)
+            await self._client.write_gatt_char(CONTROL_CHAR_UUID, raw, response=True)
         return seq
 
     def _next_seq(self) -> int:
