@@ -10,7 +10,7 @@ from homeassistant.components.number import (
     NumberMode,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfTime
+from homeassistant.const import EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -40,10 +40,6 @@ async def _set_batt_work(c: CTW3Coordinator, v: int) -> None:
 
 async def _set_batt_sleep(c: CTW3Coordinator, v: int) -> None:
     await c.async_set_battery_times(sleep_seconds=v)
-
-
-async def _set_brightness(c: CTW3Coordinator, v: int) -> None:
-    await c.async_set_lamp_ring(brightness=v)
 
 
 NUMBERS: tuple[CTW3NumberEntityDescription, ...] = (
@@ -98,19 +94,6 @@ NUMBERS: tuple[CTW3NumberEntityDescription, ...] = (
         icon="mdi:timer-sand",
         value_fn=lambda s: s.settings.battery_sleep_s if s.settings else None,
         set_fn=_set_batt_sleep,
-    ),
-    CTW3NumberEntityDescription(
-        key="lamp_brightness",
-        translation_key="lamp_brightness",
-        native_unit_of_measurement=PERCENTAGE,
-        native_min_value=0,
-        native_max_value=100,
-        native_step=1,
-        mode=NumberMode.SLIDER,
-        entity_category=EntityCategory.CONFIG,
-        icon="mdi:brightness-6",
-        value_fn=lambda s: s.settings.lamp_ring_brightness if s.settings else None,
-        set_fn=_set_brightness,
     ),
 )
 

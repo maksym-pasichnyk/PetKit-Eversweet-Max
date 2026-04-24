@@ -23,7 +23,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .client import CTW3State
-from .const import DOMAIN, MODES
+from .const import DOMAIN
 from .coordinator import CTW3Coordinator
 from .entity import CTW3Entity
 
@@ -69,12 +69,6 @@ def _total_pump_time(state: CTW3State) -> int | None:
     return state.running.water_pump_run_time if state.running else None
 
 
-def _mode(state: CTW3State) -> str | None:
-    if state.running is None:
-        return None
-    return MODES.get(state.running.mode)
-
-
 def _run_status(state: CTW3State) -> int | None:
     return state.running.run_status if state.running else None
 
@@ -109,15 +103,41 @@ def _pump_times(state: CTW3State) -> int | None:
 
 
 SENSORS: tuple[CTW3SensorEntityDescription, ...] = (
+    # ── Sensors (visible at a glance, no category) ──────────────────────
     CTW3SensorEntityDescription(
         key="battery",
         translation_key="battery",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
-        entity_category=EntityCategory.DIAGNOSTIC,
+        # Not DIAGNOSTIC — users check battery daily
         value_fn=_battery_pct,
     ),
+    CTW3SensorEntityDescription(
+        key="filter_percent",
+        translation_key="filter_percent",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=PERCENTAGE,
+        icon="mdi:air-filter",
+        value_fn=_filter_pct,
+    ),
+    CTW3SensorEntityDescription(
+        key="pump_time_today",
+        translation_key="pump_time_today",
+        device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        icon="mdi:water-pump",
+        value_fn=_today_pump_time,
+    ),
+    CTW3SensorEntityDescription(
+        key="last_drink",
+        translation_key="last_drink",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        icon="mdi:clock-outline",
+        value_fn=_last_drink,
+    ),
+    # ── Diagnostic ───────────────────────────────────────────────────────
     CTW3SensorEntityDescription(
         key="battery_voltage",
         translation_key="battery_voltage",
@@ -137,71 +157,35 @@ SENSORS: tuple[CTW3SensorEntityDescription, ...] = (
         value_fn=_supply_v,
     ),
     CTW3SensorEntityDescription(
-        key="filter_percent",
-        translation_key="filter_percent",
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
-        icon="mdi:air-filter",
-        value_fn=_filter_pct,
-    ),
-    CTW3SensorEntityDescription(
-        key="pump_time_today",
-        translation_key="pump_time_today",
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement=UnitOfTime.SECONDS,
-        icon="mdi:pump",
-        value_fn=_today_pump_time,
-    ),
-    CTW3SensorEntityDescription(
         key="pump_time_total",
         translation_key="pump_time_total",
+        device_class=SensorDeviceClass.DURATION,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfTime.SECONDS,
-        icon="mdi:pump",
+        icon="mdi:water-pump",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_total_pump_time,
-    ),
-    CTW3SensorEntityDescription(
-        key="mode",
-        translation_key="mode",
-        icon="mdi:flash",
-        value_fn=_mode,
-    ),
-    CTW3SensorEntityDescription(
-        key="run_status",
-        translation_key="run_status",
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_run_status,
-    ),
-    CTW3SensorEntityDescription(
-        key="module_status",
-        translation_key="module_status",
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_module_status,
     ),
     CTW3SensorEntityDescription(
         key="firmware",
         translation_key="firmware",
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:chip",
         value_fn=_firmware,
-    ),
-    CTW3SensorEntityDescription(
-        key="last_drink",
-        translation_key="last_drink",
-        device_class=SensorDeviceClass.TIMESTAMP,
-        value_fn=_last_drink,
     ),
     CTW3SensorEntityDescription(
         key="restart_times",
         translation_key="restart_times",
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.TOTAL_INCREASING,
+        icon="mdi:restart",
         value_fn=_restart_times,
     ),
     CTW3SensorEntityDescription(
         key="run_time_seconds",
         translation_key="run_time_seconds",
         entity_category=EntityCategory.DIAGNOSTIC,
+        device_class=SensorDeviceClass.DURATION,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfTime.SECONDS,
         value_fn=_run_time,
@@ -211,7 +195,22 @@ SENSORS: tuple[CTW3SensorEntityDescription, ...] = (
         translation_key="pump_times_total",
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.TOTAL_INCREASING,
+        icon="mdi:counter",
         value_fn=_pump_times,
+    ),
+    CTW3SensorEntityDescription(
+        key="run_status",
+        translation_key="run_status",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:information-outline",
+        value_fn=_run_status,
+    ),
+    CTW3SensorEntityDescription(
+        key="module_status",
+        translation_key="module_status",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:information-outline",
+        value_fn=_module_status,
     ),
 )
 

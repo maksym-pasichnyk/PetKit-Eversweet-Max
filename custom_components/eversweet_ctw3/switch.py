@@ -44,14 +44,6 @@ def _suspend_off(c: CTW3Coordinator) -> Awaitable[None]:
     return c.async_set_suspend(False)
 
 
-def _lamp_on(c: CTW3Coordinator) -> Awaitable[None]:
-    return c.async_set_lamp_ring(enabled=True)
-
-
-def _lamp_off(c: CTW3Coordinator) -> Awaitable[None]:
-    return c.async_set_lamp_ring(enabled=False)
-
-
 def _dnd_on(c: CTW3Coordinator) -> Awaitable[None]:
     return c.async_set_dnd(True)
 
@@ -96,23 +88,15 @@ SWITCHES: tuple[CTW3SwitchEntityDescription, ...] = (
     CTW3SwitchEntityDescription(
         key="pause",
         translation_key="pause",
-        icon="mdi:pause",
+        icon="mdi:pause-circle",
         is_on_fn=lambda s: bool(s.running.suspend_status) if s.running else None,
         turn_on_fn=_suspend_on,
         turn_off_fn=_suspend_off,
     ),
     CTW3SwitchEntityDescription(
-        key="lamp_ring",
-        translation_key="lamp_ring",
-        icon="mdi:lightbulb-on",
-        is_on_fn=lambda s: bool(s.settings.lamp_ring_switch) if s.settings else None,
-        turn_on_fn=_lamp_on,
-        turn_off_fn=_lamp_off,
-    ),
-    CTW3SwitchEntityDescription(
         key="dnd",
         translation_key="dnd",
-        icon="mdi:sleep",
+        icon="mdi:moon-waning-crescent",
         is_on_fn=lambda s: bool(s.settings.no_disturbing_switch) if s.settings else None,
         turn_on_fn=_dnd_on,
         turn_off_fn=_dnd_off,

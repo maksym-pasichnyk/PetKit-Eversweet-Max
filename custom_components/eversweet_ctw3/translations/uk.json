@@ -29,67 +29,66 @@
     },
     "entity": {
         "sensor": {
-            "battery": {"name": "Батарея"},
-            "battery_voltage": {"name": "Напруга батареї"},
-            "supply_voltage": {"name": "Напруга DC"},
-            "filter_percent": {"name": "Ресурс фільтра"},
-            "pump_time_today": {"name": "Помпа за день"},
-            "pump_time_total": {"name": "Помпа загалом"},
-            "mode": {
-                "name": "Режим",
-                "state": {
-                    "standard": "Стандартний",
-                    "intermittent": "Інтервальний",
-                    "battery": "Батарея"
-                }
-            },
-            "run_status": {"name": "Код роботи"},
-            "module_status": {"name": "Код модуля"},
-            "firmware": {"name": "Прошивка"},
-            "last_drink": {"name": "Останнє пиття"},
-            "restart_times": {"name": "Кількість перезапусків"},
-            "run_time_seconds": {"name": "Робота за журналом"},
-            "pump_times_total": {"name": "Цикли за журналом"}
+            "battery":          { "name": "Заряд батареї" },
+            "battery_voltage":  { "name": "Напруга батареї" },
+            "supply_voltage":   { "name": "Напруга DC" },
+            "filter_percent":   { "name": "Ресурс фільтра" },
+            "pump_time_today":  { "name": "Помпа за день" },
+            "pump_time_total":  { "name": "Помпа загалом" },
+            "last_drink":       { "name": "Остання активність" },
+            "run_status":       { "name": "Код роботи" },
+            "module_status":    { "name": "Код модуля" },
+            "firmware":         { "name": "Прошивка" },
+            "restart_times":    { "name": "Перезапуски" },
+            "run_time_seconds": { "name": "Час роботи" },
+            "pump_times_total": { "name": "Цикли помпи" }
         },
         "binary_sensor": {
-            "lack_water": {"name": "Вода"},
-            "low_battery": {"name": "Низький заряд"},
-            "filter_warning": {"name": "Фільтр"},
-            "breakdown": {"name": "Несправності"},
-            "night_dnd": {"name": "Нічний режим"},
-            "dc_connected": {"name": "Живлення DC"},
-            "running": {"name": "Працює"},
-            "pet_detected": {"name": "Рух біля поїлки"}
+            "lack_water":     { "name": "Рівень води" },
+            "low_battery":    { "name": "Низький заряд" },
+            "filter_warning": { "name": "Попередження фільтра" },
+            "breakdown":      { "name": "Несправність" },
+            "night_dnd":      { "name": "Нічний режим активний" },
+            "dc_connected":   { "name": "Живлення DC" },
+            "running":        { "name": "Помпа працює" },
+            "pet_detected":   { "name": "Тварина поруч" }
         },
         "switch": {
-            "power": {"name": "Живлення"},
-            "pause": {"name": "Пауза"},
-            "lamp_ring": {"name": "Підсвітка"},
-            "dnd": {"name": "Тихий режим"},
-            "child_lock": {"name": "Захист від дітей"},
-            "smart_inductive": {"name": "Датчик у Smart"},
-            "battery_inductive": {"name": "Датчик на батареї"}
+            "power":              { "name": "Живлення" },
+            "pause":              { "name": "Пауза помпи" },
+            "dnd":                { "name": "Не турбувати" },
+            "child_lock":         { "name": "Захист від дітей" },
+            "smart_inductive":    { "name": "Датчик руху (Smart)" },
+            "battery_inductive":  { "name": "Датчик руху (Battery)" }
         },
         "select": {
             "mode": {
-                "name": "Режим",
+                "name": "Режим роботи",
                 "state": {
-                    "standard": "Стандартний",
-                    "intermittent": "Інтервальний",
-                    "battery": "Батарея"
+                    "standard":    "Стандартний",
+                    "intermittent":"Інтервальний",
+                    "battery":     "Батарея"
+                }
+            },
+            "lamp_ring": {
+                "name": "Підсвітка",
+                "state": {
+                    "off":    "Вимкнено",
+                    "low":    "Низька",
+                    "medium": "Середня",
+                    "high":   "Висока"
                 }
             }
         },
         "button": {
-            "reset_filter": {"name": "Скинути фільтр"},
-            "sync_history": {"name": "Оновити історію"}
+            "reset_filter": { "name": "Скинути лічильник фільтра" },
+            "sync_history": { "name": "Завантажити журнал" }
         },
         "number": {
-            "smart_work_minutes": {"name": "Смарт: робота"},
-            "smart_sleep_minutes": {"name": "Смарт: пауза"},
-            "battery_work_seconds": {"name": "Батарея: робота"},
-            "battery_sleep_seconds": {"name": "Батарея: пауза"},
-            "lamp_brightness": {"name": "Яскравість"}
+            "smart_work_minutes":   { "name": "Smart: час роботи" },
+            "smart_sleep_minutes":  { "name": "Smart: пауза" },
+            "battery_work_seconds": { "name": "Battery: час роботи" },
+            "battery_sleep_seconds":{ "name": "Battery: пауза" }
         }
     },
     "services": {
@@ -102,7 +101,7 @@
             "description": "Перезапис розкладу «Не турбувати» (cmd 226)."
         },
         "sync_history": {
-            "name": "Синхронізувати історію",
+            "name": "Синхронізувати журнал",
             "description": "Завантажити потоковий workData з пристрою (cmd 212)."
         }
     }

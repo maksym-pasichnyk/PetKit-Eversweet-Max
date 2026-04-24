@@ -60,17 +60,40 @@ def _pet_detected(s: CTW3State) -> bool | None:
 
 
 SENSORS: tuple[CTW3BinarySensorEntityDescription, ...] = (
+    # ── Sensors (visible at a glance, no category) ──────────────────────
     CTW3BinarySensorEntityDescription(
         key="lack_water",
         translation_key="lack_water",
         device_class=BinarySensorDeviceClass.PROBLEM,
-        icon="mdi:water-off",
+        icon="mdi:water-alert",
         value_fn=_lack_water,
     ),
+    CTW3BinarySensorEntityDescription(
+        key="running",
+        translation_key="running",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        icon="mdi:water-pump",
+        value_fn=_running,
+    ),
+    CTW3BinarySensorEntityDescription(
+        key="pet_detected",
+        translation_key="pet_detected",
+        device_class=BinarySensorDeviceClass.MOTION,
+        icon="mdi:paw",
+        value_fn=_pet_detected,
+    ),
+    CTW3BinarySensorEntityDescription(
+        key="night_dnd",
+        translation_key="night_dnd",
+        icon="mdi:weather-night",
+        value_fn=_night_dnd,
+    ),
+    # ── Diagnostic (alerts covered by % sensors above) ───────────────────
     CTW3BinarySensorEntityDescription(
         key="low_battery",
         translation_key="low_battery",
         device_class=BinarySensorDeviceClass.BATTERY,
+        entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_low_battery,
     ),
     CTW3BinarySensorEntityDescription(
@@ -78,20 +101,16 @@ SENSORS: tuple[CTW3BinarySensorEntityDescription, ...] = (
         translation_key="filter_warning",
         device_class=BinarySensorDeviceClass.PROBLEM,
         icon="mdi:air-filter",
+        entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_filter,
     ),
     CTW3BinarySensorEntityDescription(
         key="breakdown",
         translation_key="breakdown",
         device_class=BinarySensorDeviceClass.PROBLEM,
+        icon="mdi:alert-circle",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_breakdown,
-    ),
-    CTW3BinarySensorEntityDescription(
-        key="night_dnd",
-        translation_key="night_dnd",
-        icon="mdi:sleep",
-        value_fn=_night_dnd,
     ),
     CTW3BinarySensorEntityDescription(
         key="dc_connected",
@@ -99,18 +118,6 @@ SENSORS: tuple[CTW3BinarySensorEntityDescription, ...] = (
         device_class=BinarySensorDeviceClass.POWER,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_dc_connected,
-    ),
-    CTW3BinarySensorEntityDescription(
-        key="running",
-        translation_key="running",
-        device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=_running,
-    ),
-    CTW3BinarySensorEntityDescription(
-        key="pet_detected",
-        translation_key="pet_detected",
-        device_class=BinarySensorDeviceClass.MOTION,
-        value_fn=_pet_detected,
     ),
 )
 
