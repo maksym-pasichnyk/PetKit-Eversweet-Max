@@ -69,13 +69,6 @@ SENSORS: tuple[CTW3BinarySensorEntityDescription, ...] = (
         value_fn=_lack_water,
     ),
     CTW3BinarySensorEntityDescription(
-        key="running",
-        translation_key="running",
-        device_class=BinarySensorDeviceClass.RUNNING,
-        icon="mdi:water-pump",
-        value_fn=_running,
-    ),
-    CTW3BinarySensorEntityDescription(
         key="pet_detected",
         translation_key="pet_detected",
         device_class=BinarySensorDeviceClass.MOTION,

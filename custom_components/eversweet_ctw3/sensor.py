@@ -127,6 +127,7 @@ SENSORS: tuple[CTW3SensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.DURATION,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_unit_of_measurement=UnitOfTime.HOURS,
         icon="mdi:water-pump",
         value_fn=_today_pump_time,
     ),
@@ -162,6 +163,7 @@ SENSORS: tuple[CTW3SensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.DURATION,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_unit_of_measurement=UnitOfTime.HOURS,
         icon="mdi:water-pump",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_total_pump_time,
@@ -188,6 +190,7 @@ SENSORS: tuple[CTW3SensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.DURATION,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_unit_of_measurement=UnitOfTime.HOURS,
         value_fn=_run_time,
     ),
     CTW3SensorEntityDescription(
