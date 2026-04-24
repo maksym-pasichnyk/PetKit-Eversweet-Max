@@ -29,66 +29,132 @@
     },
     "entity": {
         "sensor": {
-            "battery":          { "name": "Remaining Battery" },
-            "battery_voltage":  { "name": "Battery Voltage" },
-            "supply_voltage":   { "name": "DC Supply Voltage" },
-            "filter_percent":   { "name": "Filter Remaining Life" },
-            "pump_time_today":  { "name": "Today's Pump Time" },
-            "pump_time_total":  { "name": "Total Pump Time" },
-            "last_drink":       { "name": "Last Activity" },
-            "run_status":       { "name": "Run Code" },
-            "module_status":    { "name": "Module Code" },
-            "firmware":         { "name": "Firmware Version" },
-            "restart_times":    { "name": "Restart Count" },
-            "run_time_seconds": { "name": "Uptime" },
-            "pump_times_total": { "name": "Pump Cycles" }
+            "battery": {
+                "name": "Remaining Battery"
+            },
+            "battery_voltage": {
+                "name": "Battery Voltage"
+            },
+            "supply_voltage": {
+                "name": "DC Supply Voltage"
+            },
+            "filter_percent": {
+                "name": "Filter Remaining Life"
+            },
+            "pump_time_today": {
+                "name": "Today's Pump Time"
+            },
+            "pump_time_total": {
+                "name": "Total Pump Time"
+            },
+            "last_drink": {
+                "name": "Last Activity"
+            },
+            "run_status": {
+                "name": "Run Code"
+            },
+            "module_status": {
+                "name": "Module Code"
+            },
+            "firmware": {
+                "name": "Firmware Version"
+            },
+            "restart_times": {
+                "name": "Restart Count"
+            },
+            "run_time_seconds": {
+                "name": "Uptime"
+            },
+            "pump_times_total": {
+                "name": "Pump Cycles"
+            }
         },
         "binary_sensor": {
-            "lack_water":     { "name": "Water" },
-            "low_battery":    { "name": "Low Battery" },
-            "filter_warning": { "name": "Filter Warning" },
-            "breakdown":      { "name": "Fault" },
-            "night_dnd":      { "name": "Do Not Disturb Active" },
-            "dc_connected":   { "name": "DC Power" },
-            "running":        { "name": "Running" },
-            "pet_detected":   { "name": "Pet Detected" }
+            "lack_water": {
+                "name": "Water"
+            },
+            "low_battery": {
+                "name": "Low Battery"
+            },
+            "filter_warning": {
+                "name": "Filter Warning"
+            },
+            "breakdown": {
+                "name": "Fault"
+            },
+            "night_dnd": {
+                "name": "Do Not Disturb Active"
+            },
+            "dc_connected": {
+                "name": "DC Power"
+            },
+            "running": {
+                "name": "Running"
+            },
+            "pet_detected": {
+                "name": "Pet Detected"
+            }
         },
         "switch": {
-            "power":              { "name": "Device Switch" },
-            "pause":              { "name": "Pause" },
-            "dnd":                { "name": "Do Not Disturb" },
-            "child_lock":         { "name": "Child Lock" },
-            "smart_inductive":    { "name": "Sensor Mode" },
-            "battery_inductive":  { "name": "Sensor Mode" }
+            "power": {
+                "name": "Device Switch"
+            },
+            "pause": {
+                "name": "Pause"
+            },
+            "dnd": {
+                "name": "Do Not Disturb"
+            },
+            "child_lock": {
+                "name": "Child Lock"
+            },
+            "smart_inductive": {
+                "name": "Smart Sensor Mode"
+            },
+            "battery_inductive": {
+                "name": "Battery Sensor Mode"
+            }
         },
         "select": {
             "mode": {
                 "name": "Mode",
                 "state": {
-                    "standard":    "Standard Mode",
-                    "intermittent":"Intermittent Mode",
-                    "battery":     "Battery Mode"
+                    "standard": "Standard Mode",
+                    "intermittent": "Intermittent Mode",
+                    "battery": "Battery Mode"
                 }
             },
             "lamp_ring": {
                 "name": "Indicator Light",
                 "state": {
-                    "off":    "Off",
-                    "low":    "Low",
+                    "off": "Off",
+                    "low": "Low",
                     "medium": "Medium",
-                    "high":   "High"
+                    "high": "High"
                 }
             }
         },
         "button": {
-            "reset_filter": { "name": "Reset Filter" },
-            "sync_history": { "name": "Sync History" }
+            "reset_filter": {
+                "name": "Reset Filter"
+            },
+            "sync_history": {
+                "name": "Sync History"
+            }
         },
         "number": {
-            "smart_work_minutes":    { "name": "Working Time" },
-            "smart_sleep_minutes":   { "name": "Sleeping Time" },
-            "battery_work_seconds":  { "name": "Water Flow Time" },
-            "battery_sleep_seconds": { "name": "Sleeping Mode Time" }
+            "smart_work_minutes": {
+                "name": "Smart Water Flow Time"
+            },
+            "smart_sleep_minutes": {
+                "name": "Smart Sleeping Mode Time"
+            },
+            "battery_work_seconds": {
+                "name": "Battery Water Flow Time"
+            },
+            "battery_sleep_seconds": {
+                "name": "Battery Sleeping Mode Time"
+            }
         }
     },
     "services": {
