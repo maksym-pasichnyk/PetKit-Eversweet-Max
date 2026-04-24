@@ -212,9 +212,9 @@ def build_security_check(secret: bytes) -> bytes:
     return bytes(secret)
 
 
-def build_control(power: int, mode: int, suspend: int) -> bytes:
-    """cmd 220 — NB: APK serializes as [power, suspend, mode]."""
-    return bytes([power & 0xFF, suspend & 0xFF, mode & 0xFF])
+def build_control(power: int, mode: int, running: int) -> bytes:
+    """cmd 220 — NB: APK serializes as [power, running, mode]."""
+    return bytes([power & 0xFF, running & 0xFF, mode & 0xFF])
 
 
 def build_stream_setting(max_count: int, max_package_len: int) -> bytes:
@@ -356,7 +356,7 @@ def parse_device_log(data: bytes) -> DeviceLog:
 @dataclass
 class RunningInfo:
     power_status: int = 0
-    suspend_status: int = 0
+    running_status: int = 0
     mode: int = 0
     electric_status: int = 0
     is_night_no_disturbing: int = 0
@@ -381,7 +381,7 @@ def parse_running_info(data: bytes) -> RunningInfo:
     if len(data) >= 1:
         r.power_status = data[0]
     if len(data) >= 2:
-        r.suspend_status = data[1]
+        r.running_status = data[1]
     if len(data) >= 3:
         r.mode = data[2]
     if len(data) >= 4:

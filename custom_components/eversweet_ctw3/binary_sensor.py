@@ -52,7 +52,7 @@ def _dc_connected(s: CTW3State) -> bool | None:
 def _running(s: CTW3State) -> bool | None:
     if s.running is None:
         return None
-    return bool(s.running.power_status and not s.running.suspend_status)
+    return bool(s.running.power_status and s.running.running_status)
 
 
 def _pet_detected(s: CTW3State) -> bool | None:

@@ -29,49 +29,49 @@
     },
     "entity": {
         "sensor": {
-            "battery":          { "name": "Battery" },
-            "battery_voltage":  { "name": "Battery voltage" },
-            "supply_voltage":   { "name": "DC supply voltage" },
-            "filter_percent":   { "name": "Filter life" },
-            "pump_time_today":  { "name": "Pump today" },
-            "pump_time_total":  { "name": "Pump total" },
-            "last_drink":       { "name": "Last activity" },
-            "run_status":       { "name": "Run code" },
-            "module_status":    { "name": "Module code" },
-            "firmware":         { "name": "Firmware" },
-            "restart_times":    { "name": "Restarts" },
+            "battery":          { "name": "Remaining Battery" },
+            "battery_voltage":  { "name": "Battery Voltage" },
+            "supply_voltage":   { "name": "DC Supply Voltage" },
+            "filter_percent":   { "name": "Filter Remaining Life" },
+            "pump_time_today":  { "name": "Today's Pump Time" },
+            "pump_time_total":  { "name": "Total Pump Time" },
+            "last_drink":       { "name": "Last Activity" },
+            "run_status":       { "name": "Run Code" },
+            "module_status":    { "name": "Module Code" },
+            "firmware":         { "name": "Firmware Version" },
+            "restart_times":    { "name": "Restart Count" },
             "run_time_seconds": { "name": "Uptime" },
-            "pump_times_total": { "name": "Pump cycles" }
+            "pump_times_total": { "name": "Pump Cycles" }
         },
         "binary_sensor": {
-            "lack_water":     { "name": "Water level" },
-            "low_battery":    { "name": "Low battery" },
-            "filter_warning": { "name": "Filter warning" },
+            "lack_water":     { "name": "Water" },
+            "low_battery":    { "name": "Low Battery" },
+            "filter_warning": { "name": "Filter Warning" },
             "breakdown":      { "name": "Fault" },
-            "night_dnd":      { "name": "Night mode active" },
-            "dc_connected":   { "name": "DC power" },
-            "running":        { "name": "Pump running" },
-            "pet_detected":   { "name": "Pet nearby" }
+            "night_dnd":      { "name": "Do Not Disturb Active" },
+            "dc_connected":   { "name": "DC Power" },
+            "running":        { "name": "Running" },
+            "pet_detected":   { "name": "Pet Detected" }
         },
         "switch": {
-            "power":              { "name": "Power" },
-            "pause":              { "name": "Pause pump" },
-            "dnd":                { "name": "Do not disturb" },
-            "child_lock":         { "name": "Child lock" },
-            "smart_inductive":    { "name": "Motion sensor (Smart)" },
-            "battery_inductive":  { "name": "Motion sensor (Battery)" }
+            "power":              { "name": "Device Switch" },
+            "pause":              { "name": "Pause" },
+            "dnd":                { "name": "Do Not Disturb" },
+            "child_lock":         { "name": "Child Lock" },
+            "smart_inductive":    { "name": "Sensor Mode" },
+            "battery_inductive":  { "name": "Sensor Mode" }
         },
         "select": {
             "mode": {
-                "name": "Operating mode",
+                "name": "Mode",
                 "state": {
-                    "standard":    "Standard",
-                    "intermittent":"Intermittent",
-                    "battery":     "Battery"
+                    "standard":    "Standard Mode",
+                    "intermittent":"Intermittent Mode",
+                    "battery":     "Battery Mode"
                 }
             },
             "lamp_ring": {
-                "name": "Light",
+                "name": "Indicator Light",
                 "state": {
                     "off":    "Off",
                     "low":    "Low",
@@ -81,27 +81,27 @@
             }
         },
         "button": {
-            "reset_filter": { "name": "Reset filter counter" },
-            "sync_history": { "name": "Download log" }
+            "reset_filter": { "name": "Reset Filter" },
+            "sync_history": { "name": "Sync History" }
         },
         "number": {
-            "smart_work_minutes":    { "name": "Smart: run time" },
-            "smart_sleep_minutes":   { "name": "Smart: pause" },
-            "battery_work_seconds":  { "name": "Battery: run time" },
-            "battery_sleep_seconds": { "name": "Battery: pause" }
+            "smart_work_minutes":    { "name": "Working Time" },
+            "smart_sleep_minutes":   { "name": "Sleeping Time" },
+            "battery_work_seconds":  { "name": "Water Flow Time" },
+            "battery_sleep_seconds": { "name": "Sleeping Mode Time" }
         }
     },
     "services": {
         "write_light_schedule": {
-            "name": "Write light schedule",
+            "name": "Write Light Schedule",
             "description": "Overwrite the lamp-ring schedule (cmd 225)."
         },
         "write_dnd_schedule": {
-            "name": "Write DND schedule",
-            "description": "Overwrite the DND schedule (cmd 226)."
+            "name": "Write Do Not Disturb Schedule",
+            "description": "Overwrite the Do Not Disturb schedule (cmd 226)."
         },
         "sync_history": {
-            "name": "Sync drinking history",
+            "name": "Sync Drinking History",
             "description": "Pull streamed workData records from the device (cmd 212)."
         }
     }

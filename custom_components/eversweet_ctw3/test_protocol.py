@@ -113,9 +113,9 @@ class PayloadTests(unittest.TestCase):
         self.assertEqual(secs, 60)
         self.assertEqual(payload[5], 14)
 
-    def test_build_control_order_is_power_suspend_mode(self):
-        """APK: changeDeviceMode(power, mode, suspend) serializes [power, suspend, mode]."""
-        buf = protocol.build_control(power=1, mode=2, suspend=0)
+    def test_build_control_order_is_power_running_mode(self):
+        """cmd 220 payload: [power, running, mode]. running=1 means pump is active."""
+        buf = protocol.build_control(power=1, mode=2, running=0)
         self.assertEqual(buf, bytes([1, 0, 2]))
 
     def test_build_full_settings_min_and_max(self):
@@ -199,7 +199,7 @@ class ParseTests(unittest.TestCase):
 
     def test_parse_running_info_full(self):
         # Build a 26-byte payload that exercises every offset
-        # [0]power=1 [1]suspend=0 [2]mode=1 [3]electric=1 [4]nightDnd=0
+        # [0]power=1 [1]running=0 [2]mode=1 [3]electric=1 [4]nightDnd=0
         # [5]breakdown=0 [6]lack=1 [7]lowBatt=0 [8]filter=0
         # [9..12] waterPumpRunTime=0x0000ABCD (BE)
         # [13] filterPct=80

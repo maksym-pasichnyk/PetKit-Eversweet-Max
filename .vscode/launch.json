@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Eversweet: List Tests",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/eversweet_client.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "python": "${workspaceFolder}/.venv/bin/python",
+      "args": [
+        "test",
+        "${input:eversweetAddress}",
+        "list"
+      ]
+    },
+    {
+      "name": "Eversweet: Run Test",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/eversweet_client.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "python": "${workspaceFolder}/.venv/bin/python",
+      "args": [
+        "test",
+        "${input:eversweetAddress}"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "id": "eversweetAddress",
+      "type": "promptString",
+      "description": "BLE address/UUID of the Eversweet device"
+    }
+  ]
+}

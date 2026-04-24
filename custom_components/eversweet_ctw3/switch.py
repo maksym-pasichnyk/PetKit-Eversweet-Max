@@ -89,7 +89,7 @@ SWITCHES: tuple[CTW3SwitchEntityDescription, ...] = (
         key="pause",
         translation_key="pause",
         icon="mdi:pause-circle",
-        is_on_fn=lambda s: bool(s.running.suspend_status) if s.running else None,
+        is_on_fn=lambda s: not bool(s.running.running_status) if s.running else None,
         turn_on_fn=_suspend_on,
         turn_off_fn=_suspend_off,
     ),

@@ -546,7 +546,7 @@ class CTW3BleClient:
                 build_control(
                     power=1 if on else 0,
                     mode=r.mode or MODE_STANDARD,
-                    suspend=r.suspend_status,
+                    running=r.running_status,
                 ),
                 response_cmd=CMD_CONTROL,
             )
@@ -559,7 +559,7 @@ class CTW3BleClient:
         async with self._operation_lock:
             await self._request(
                 CMD_CONTROL,
-                build_control(power=1, mode=mode, suspend=1),
+                build_control(power=1, mode=mode, running=1),
                 response_cmd=CMD_CONTROL,
             )
             await self.refresh_running()
@@ -573,7 +573,7 @@ class CTW3BleClient:
                 build_control(
                     power=r.power_status if r.power_status else 1,
                     mode=r.mode or MODE_STANDARD,
-                    suspend=1 if suspend else 0,
+                    running=0 if suspend else 1,
                 ),
                 response_cmd=CMD_CONTROL,
             )
