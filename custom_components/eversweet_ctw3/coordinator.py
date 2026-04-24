@@ -60,11 +60,21 @@ class CTW3Coordinator(DataUpdateCoordinator[CTW3State]):
     async def _ensure_client(self) -> CTW3BleClient:
         async with self._client_lock:
             if self._client is not None and self._client.state.connected:
+                _LOGGER.debug("Reusing connected CTW3 BLE client for %s", self._address)
                 return self._client
             ble_device = self._find_ble_device()
             if ble_device is None:
+                _LOGGER.warning(
+                    "CTW3 device %s was not found in Home Assistant Bluetooth cache",
+                    self._address,
+                )
                 raise UpdateFailed(f"Device {self._address} not discovered by HA bluetooth")
             if self._client is None:
+                _LOGGER.info(
+                    "Creating CTW3 BLE client for %s (%s)",
+                    self._device_name,
+                    self._address,
+                )
                 self._client = CTW3BleClient(
                     ble_device,
                     self._secret,
@@ -73,15 +83,25 @@ class CTW3Coordinator(DataUpdateCoordinator[CTW3State]):
                 )
             else:
                 # refresh BLEDevice reference (adv rotation)
+                _LOGGER.debug("Refreshing CTW3 BLEDevice reference for %s", self._address)
                 self._client._device = ble_device  # noqa: SLF001
             try:
                 await self._client.handshake()
             except CTW3Error as err:
+                _LOGGER.warning(
+                    "CTW3 handshake failed for %s (%s): %s",
+                    self._device_name,
+                    self._address,
+                    err,
+                )
                 raise UpdateFailed(f"Handshake failed: {err}") from err
             return self._client
 
     def _handle_disconnect(self) -> None:
-        _LOGGER.debug("BLE disconnect for %s — coordinator will reconnect on next poll", self._address)
+        _LOGGER.warning(
+            "BLE disconnect for %s; coordinator will reconnect on next poll",
+            self._address,
+        )
 
     async def _async_update_data(self) -> CTW3State:
         client = await self._ensure_client()

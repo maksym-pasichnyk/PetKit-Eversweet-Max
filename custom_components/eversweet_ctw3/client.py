@@ -83,6 +83,36 @@ from .protocol import (
 
 _LOGGER = logging.getLogger(__name__)
 
+_CMD_NAMES = {
+    CMD_CHECK_STREAM_DATA: "check_stream_data",
+    CMD_CONTROL: "control",
+    CMD_DEVICE_UPDATE_PUSH: "device_update_push",
+    CMD_DND_SCHEDULE: "dnd_schedule",
+    CMD_FULL_SETTINGS: "full_settings",
+    CMD_GET_DEVICE_ID: "get_device_id",
+    CMD_GET_DEVICE_LOG: "get_device_log",
+    CMD_GET_FIRMWARE: "get_firmware",
+    CMD_LIGHT_SCHEDULE: "light_schedule",
+    CMD_RESET_FILTER: "reset_filter",
+    CMD_RUNNING_INFO: "running_info",
+    CMD_SECURITY_CHECK: "security_check",
+    CMD_SET_STREAM_SETTING: "set_stream_setting",
+    CMD_SETTINGS: "settings",
+    CMD_START_SYNC_HISTORY: "start_sync_history",
+    CMD_STREAM_END: "stream_end",
+    CMD_STREAM_PUSH_68: "stream_push_68",
+    CMD_STREAM_PUSH_82: "stream_push_82",
+    CMD_SYNC_BATTERY: "sync_battery",
+    CMD_SYNC_TIME: "sync_time",
+    CMD_WRITE_DND_SCHEDULE: "write_dnd_schedule",
+    CMD_WRITE_LIGHT_SCHEDULE: "write_light_schedule",
+}
+
+
+def _cmd_label(cmd: int) -> str:
+    """Return a compact command label for logs."""
+    return f"{_CMD_NAMES.get(cmd, 'unknown')}({cmd})"
+
 
 class CTW3Error(Exception):
     """Base error for CTW3 client."""
@@ -171,7 +201,7 @@ class CTW3BleClient:
         async with self._lock:
             if self._client is not None and self._client.is_connected:
                 return
-            _LOGGER.debug("Connecting to %s (%s)", self._name, self._device.address)
+            _LOGGER.info("Connecting to CTW3 device %s (%s)", self._name, self._device.address)
             self._client = await establish_connection(
                 BleakClientWithServiceCache,
                 self._device,
@@ -186,9 +216,23 @@ class CTW3BleClient:
                 await self._client._backend._acquire_mtu()  # type: ignore[attr-defined]
             except Exception:  # pragma: no cover - backend-specific
                 pass
+            try:
+                for service in self._client.services:
+                    for char in service.characteristics:
+                        _LOGGER.debug(
+                            "GATT characteristic %s properties=%s",
+                            char.uuid,
+                            ",".join(char.properties),
+                        )
+            except Exception:  # pragma: no cover - backend-specific
+                _LOGGER.debug("Could not inspect GATT services", exc_info=True)
             await self._client.start_notify(DATA_CHAR_UUID, self._on_notify)
+            # Some BLE backends report CCCD writes complete before notification
+            # delivery is fully settled. A short pause avoids losing the first
+            # fast response in local bridge / CLI sessions.
+            await asyncio.sleep(0.25)
             self.state.connected = True
-            _LOGGER.debug("Connected to %s", self._name)
+            _LOGGER.info("Connected to CTW3 device %s", self._name)
 
     async def disconnect(self) -> None:
         async with self._lock:
@@ -206,7 +250,7 @@ class CTW3BleClient:
                 self.state.connected = False
 
     def _handle_disconnect(self, _client: BleakClient) -> None:
-        _LOGGER.debug("Device %s disconnected", self._name)
+        _LOGGER.warning("CTW3 device %s disconnected", self._name)
         self.state.connected = False
         # fail any pending futures
         for fut in list(self._pending.values()):
@@ -223,9 +267,17 @@ class CTW3BleClient:
     # Low-level notify / send
     # ------------------------------------------------------------------
     def _on_notify(self, _sender, data: bytearray) -> None:
+        _LOGGER.debug("<- raw notification %s", bytes(data).hex())
         frames = self._decoder.feed(bytes(data))
         for frame in frames:
-            _LOGGER.debug("<- %s", frame)
+            _LOGGER.debug(
+                "<- %s type=%d seq=%d len=%d data=%s",
+                _cmd_label(frame.cmd),
+                frame.type,
+                frame.sequence,
+                len(frame.data),
+                frame.data.hex(),
+            )
             try:
                 self._dispatch_frame(frame)
             except Exception:  # noqa: BLE001
@@ -262,11 +314,23 @@ class CTW3BleClient:
             )
             return
         if frame.type != TYPE_RESPONSE:
+            _LOGGER.debug(
+                "Ignoring non-response frame %s type=%d seq=%d",
+                _cmd_label(frame.cmd),
+                frame.type,
+                frame.sequence,
+            )
             return
         # complete pending request
         fut = self._pending.pop((frame.cmd, frame.sequence), None)
         if fut is not None and not fut.done():
             fut.set_result(frame)
+        else:
+            _LOGGER.debug(
+                "No pending request for response %s seq=%d",
+                _cmd_label(frame.cmd),
+                frame.sequence,
+            )
 
     def _handle_stream_frame(self, frame: Frame) -> None:
         if frame.cmd in (CMD_STREAM_PUSH_68, CMD_STREAM_PUSH_82):
@@ -286,7 +350,16 @@ class CTW3BleClient:
             raise CTW3Error("not connected")
         seq = self._next_seq() if sequence is None else sequence
         raw = encode_command(cmd, frame_type, seq, data)
-        _LOGGER.debug("-> cmd=%d type=%d seq=%d data=%s", cmd, frame_type, seq, data.hex())
+        data_hex = "<redacted>" if cmd == CMD_SECURITY_CHECK else data.hex()
+        _LOGGER.debug(
+            "-> %s type=%d seq=%d len=%d data=%s raw=%s",
+            _cmd_label(cmd),
+            frame_type,
+            seq,
+            len(data),
+            data_hex,
+            raw.hex(),
+        )
         async with self._write_lock:
             await self._client.write_gatt_char(CONTROL_CHAR_UUID, raw, response=True)
         return seq
@@ -314,9 +387,33 @@ class CTW3BleClient:
             old.cancel()
         self._pending[pending_key] = future
         try:
+            _LOGGER.debug(
+                "Requesting %s seq=%d response=%s timeout=%.1fs",
+                _cmd_label(cmd),
+                seq,
+                _cmd_label(target_cmd),
+                timeout,
+            )
             await self._send_frame(cmd, TYPE_REQUEST, data, sequence=seq)
-            return await asyncio.wait_for(future, timeout=timeout)
+            frame = await asyncio.wait_for(future, timeout=timeout)
+            _LOGGER.debug(
+                "Response received for %s seq=%d len=%d",
+                _cmd_label(target_cmd),
+                seq,
+                len(frame.data),
+            )
+            return frame
         except asyncio.TimeoutError as err:
+            connected = self._client is not None and self._client.is_connected
+            _LOGGER.warning(
+                "Timed out waiting for CTW3 response %s seq=%d after %.1fs "
+                "(connected=%s, pending=%d)",
+                _cmd_label(target_cmd),
+                seq,
+                timeout,
+                connected,
+                len(self._pending),
+            )
             raise CTW3Timeout(
                 f"timeout waiting for cmd {target_cmd} seq {seq}"
             ) from err
@@ -329,41 +426,56 @@ class CTW3BleClient:
     async def handshake(self) -> None:
         """Run the full handshake sequence."""
         async with self._operation_lock:
+            _LOGGER.info("Starting CTW3 handshake for %s", self._name)
             await self.connect()
 
             # 1. Identify
+            _LOGGER.info("CTW3 handshake step 1/6: identify device")
             frame = await self._request(CMD_GET_DEVICE_ID)
             info = parse_device_id(frame.data)
             self.state.device_id = info.device_id
             self.state.sn = info.sn
-            _LOGGER.info("CTW3 id=%d sn=%s", info.device_id, info.sn)
+            _LOGGER.info("CTW3 device identified: id=%d sn=%s", info.device_id, info.sn)
 
             # 2. Security check (cmd 86)
+            _LOGGER.info("CTW3 handshake step 2/6: security check")
             frame = await self._request(
                 CMD_SECURITY_CHECK,
                 build_security_check(self._secret),
             )
             if not frame.data or frame.data[0] != 1:
+                _LOGGER.warning("CTW3 security check failed for %s", self._name)
                 raise CTW3AuthError("security check failed (wrong secret?)")
+            _LOGGER.info("CTW3 security check passed")
 
             # 3. Time sync (cmd 84)
+            _LOGGER.info("CTW3 handshake step 3/6: sync time")
             await self._request(CMD_SYNC_TIME, build_sync_time_payload())
 
             # 4. Firmware / hardware (cmd 200)
+            _LOGGER.info("CTW3 handshake step 4/6: read firmware")
             frame = await self._request(CMD_GET_FIRMWARE)
             fw = parse_firmware(frame.data)
             self.state.hardware = fw.hardware
             self.state.firmware = fw.firmware
+            _LOGGER.info(
+                "CTW3 firmware read: hardware=%s firmware=%s",
+                fw.hardware,
+                fw.firmware,
+            )
 
             # 5. Device log (cmd 201) — optional
+            _LOGGER.info("CTW3 handshake step 5/6: read device log")
             try:
                 frame = await self._request(CMD_GET_DEVICE_LOG, timeout=3.0)
                 self.state.device_log = parse_device_log(frame.data)
             except CTW3Timeout:
-                _LOGGER.debug("Device did not respond to cmd 201 (not fatal)")
+                _LOGGER.info("CTW3 did not respond to device log request (not fatal)")
 
             # 6. Battery + running + settings + schedules
+            _LOGGER.info("CTW3 handshake step 6/6: refresh state")
             await self._refresh_all_unlocked()
+            _LOGGER.info("CTW3 handshake completed for %s", self._name)
 
     # ------------------------------------------------------------------
     # High-level data refresh
