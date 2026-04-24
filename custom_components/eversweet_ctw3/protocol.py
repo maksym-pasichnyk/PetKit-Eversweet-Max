@@ -61,7 +61,7 @@ class Frame:
 
 
 def encode_command(cmd: int, frame_type: int, sequence: int, data: bytes = b"") -> bytes:
-    """Serialize a command frame: magic|cmd|type|seq|len(LE u16)|data|0x8F."""
+    """Serialize a command frame: magic|cmd|type|seq|len(LE u16)|data|0xFB."""
     if len(data) > 0xFFFF:
         raise ValueError("payload too large")
     buf = bytearray()

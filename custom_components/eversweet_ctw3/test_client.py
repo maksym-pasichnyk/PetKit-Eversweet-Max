@@ -77,6 +77,11 @@ class ClientTests(unittest.IsolatedAsyncioTestCase):
         device = device_cls("AA:BB:CC:DD:EE:FF", "Petkit_CTW3")
         return client_mod.CTW3BleClient(device, b"\x00" * 8)
 
+    async def test_first_request_sequence_starts_at_zero(self):
+        client = self._make_client()
+        self.assertEqual(client._next_seq(), 0)  # noqa: SLF001
+        self.assertEqual(client._next_seq(), 1)  # noqa: SLF001
+
     async def test_dispatch_matches_pending_by_cmd_and_sequence(self):
         client = self._make_client()
         future: asyncio.Future[protocol.Frame] = asyncio.get_running_loop().create_future()

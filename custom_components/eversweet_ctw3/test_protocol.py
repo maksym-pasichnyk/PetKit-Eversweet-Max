@@ -33,7 +33,7 @@ TYPE_RESPONSE = const.TYPE_RESPONSE
 
 class FrameTests(unittest.TestCase):
     def test_encode_command_has_correct_layout(self):
-        """Matches PetkitBleMsg.toRawDataBytes — magic|cmd|type|seq|len(LE)|data|0x8F."""
+        """Matches PetkitBleMsg.toRawDataBytes: magic|cmd|type|seq|len(LE)|data|0xFB."""
         raw = protocol.encode_command(cmd=213, frame_type=TYPE_REQUEST, sequence=5, data=b"\x01\x02\x03")
         self.assertEqual(raw[0:3], MAGIC_CMD)
         self.assertEqual(raw[3], 213)
@@ -44,6 +44,10 @@ class FrameTests(unittest.TestCase):
         self.assertEqual(raw[7], 0)
         self.assertEqual(raw[8:11], b"\x01\x02\x03")
         self.assertEqual(raw[11], FRAME_TAIL)
+
+    def test_encode_command_matches_first_launch_capture(self):
+        raw = protocol.encode_command(cmd=213, frame_type=TYPE_REQUEST, sequence=0, data=b"")
+        self.assertEqual(raw, bytes.fromhex("fafcfdd501000000fb"))
 
     def test_length_is_little_endian_for_256(self):
         payload = b"\x00" * 256

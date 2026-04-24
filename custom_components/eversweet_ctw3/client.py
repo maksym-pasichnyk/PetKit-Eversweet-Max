@@ -145,7 +145,7 @@ class CTW3BleClient:
 
         self._client: BleakClient | None = None
         self._decoder = FrameDecoder()
-        self._seq = 0
+        self._seq = -1
         self._lock = asyncio.Lock()
         self._operation_lock = asyncio.Lock()
         self._write_lock = asyncio.Lock()

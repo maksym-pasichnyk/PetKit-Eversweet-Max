@@ -16,7 +16,7 @@ DFU_CONTROL_POINT_UUID: Final = "00010203-0405-0607-0809-0a0b0c0d2b12"
 # --- Frame magic ---------------------------------------------------------
 MAGIC_CMD: Final = bytes([0xFA, 0xFC, 0xFD])
 MAGIC_STREAM: Final = bytes([0xFA, 0xFC, 0xFE])
-FRAME_TAIL: Final = 0x8F
+FRAME_TAIL: Final = 0xFB
 
 # --- Frame types ---------------------------------------------------------
 TYPE_REQUEST: Final = 1
