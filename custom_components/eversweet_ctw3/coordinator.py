@@ -110,7 +110,9 @@ class CTW3Coordinator(DataUpdateCoordinator[CTW3State]):
         for attempt in range(2):
             try:
                 client = await self._ensure_client()
-                return await client.refresh_all()
+                state = await client.refresh_all()
+                await self._safe_disconnect()
+                return state
             except (CTW3Error, UpdateFailed) as err:
                 last_err = err
                 await self._safe_disconnect()
@@ -155,6 +157,7 @@ class CTW3Coordinator(DataUpdateCoordinator[CTW3State]):
             try:
                 await action(client)
                 self.async_set_updated_data(client.state)
+                await self._safe_disconnect()
                 return
             except CTW3Error as err:
                 last_err = err
