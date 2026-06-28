@@ -89,6 +89,7 @@ class CTW3Coordinator(DataUpdateCoordinator[CTW3State]):
             try:
                 await self._client.handshake()
             except CTW3Error as err:
+                await self._safe_disconnect()
                 _LOGGER.warning(
                     "CTW3 handshake failed for %s (%s): %s",
                     self._device_name,

@@ -377,8 +377,11 @@ class CTW3BleClient:
             data_hex,
             raw.hex(),
         )
-        async with self._write_lock:
-            await self._client.write_gatt_char(CONTROL_CHAR_UUID, raw, response=True)
+        try:
+            async with self._write_lock:
+                await self._client.write_gatt_char(CONTROL_CHAR_UUID, raw, response=True)
+        except BleakError as err:
+            raise CTW3Error(f"BLE write failed for {_cmd_label(cmd)}: {err}") from err
         return seq
 
     def _next_seq(self) -> int:
