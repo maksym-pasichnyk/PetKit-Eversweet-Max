@@ -18,7 +18,7 @@ Effortlessly connect, control, and monitor your PetKit Eversweet Max fountain in
 - Home Assistant `2024.12.0` or newer
 - A working Bluetooth adapter available to Home Assistant
 - A PetKit CTW3-family fountain within BLE range
-- The device's 8-byte auth secret (`16` hex characters)
+- The device's auth secret (`12` or `16` hex characters)
 
 ## Installation
 
@@ -27,11 +27,12 @@ Effortlessly connect, control, and monitor your PetKit Eversweet Max fountain in
 3. Open **Settings -> Devices & services -> Add Integration**.
 4. Add **PetKit Eversweet Max**, or wait for Bluetooth discovery to offer it automatically.
 5. Select the discovered `Petkit_CTW3*` device.
-6. Enter the fountain's `16`-character hex secret during setup.
+6. Enter the fountain's `12`- or `16`-character hex secret during setup.
 
 ## Authentication
 
-The fountain uses an 8-byte security value for the BLE security check (`cmd 86`).
+The fountain uses a PetKit-issued security value for the BLE security check (`cmd 86`).
+Some CTW3 devices expose an 8-byte value (`16` hex characters), while others expose a 6-byte value (`12` hex characters) via PetKit cloud.
 
 - Enter the real secret during setup.
 - If authentication fails, verify that the secret matches the one issued during PetKit app binding.

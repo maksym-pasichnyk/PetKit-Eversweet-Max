@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import timedelta
+from typing import Awaitable, Callable
 
 from bleak.backends.device import BLEDevice
 from homeassistant.components import bluetooth
@@ -104,22 +105,64 @@ class CTW3Coordinator(DataUpdateCoordinator[CTW3State]):
         )
 
     async def _async_update_data(self) -> CTW3State:
-        client = await self._ensure_client()
-        try:
-            state = await client.refresh_all()
-        except CTW3Error as err:
-            # drop client so next poll re-handshakes
-            await self._safe_disconnect()
-            raise UpdateFailed(str(err)) from err
-        return state
+        last_err: CTW3Error | None = None
+        for attempt in range(2):
+            client = await self._ensure_client()
+            try:
+                return await client.refresh_all()
+            except CTW3Error as err:
+                last_err = err
+                await self._safe_disconnect()
+                if attempt == 0:
+                    _LOGGER.info(
+                        "CTW3 refresh failed for %s (%s); reconnecting and retrying once: %s",
+                        self._device_name,
+                        self._address,
+                        err,
+                    )
+                    await asyncio.sleep(0.5)
+                    continue
+                raise UpdateFailed(str(err)) from err
+        raise UpdateFailed(str(last_err))
 
     async def _safe_disconnect(self) -> None:
         if self._client is None:
             return
+        client = self._client
+        self._client = None
         try:
-            await self._client.disconnect()
+            await client.disconnect()
         except Exception:  # noqa: BLE001
             _LOGGER.debug("disconnect failed (ignored)", exc_info=True)
+
+    async def _run_with_retry(
+        self,
+        label: str,
+        action: Callable[[CTW3BleClient], Awaitable[None]],
+    ) -> None:
+        last_err: CTW3Error | None = None
+        for attempt in range(2):
+            client = await self._ensure_client()
+            try:
+                await action(client)
+                self.async_set_updated_data(client.state)
+                return
+            except CTW3Error as err:
+                last_err = err
+                await self._safe_disconnect()
+                if attempt == 0:
+                    _LOGGER.info(
+                        "CTW3 %s failed for %s (%s); reconnecting and retrying once: %s",
+                        label,
+                        self._device_name,
+                        self._address,
+                        err,
+                    )
+                    await asyncio.sleep(0.5)
+                    continue
+                raise
+        if last_err is not None:
+            raise last_err
 
     async def async_shutdown(self) -> None:  # type: ignore[override]
         await super().async_shutdown()
@@ -129,83 +172,76 @@ class CTW3Coordinator(DataUpdateCoordinator[CTW3State]):
     # Convenience control wrappers used by entities
     # ------------------------------------------------------------------
     async def async_set_power(self, on: bool) -> None:
-        client = await self._ensure_client()
-        await client.set_power(on)
-        self.async_set_updated_data(client.state)
+        await self._run_with_retry("set_power", lambda client: client.set_power(on))
 
     async def async_set_mode(self, mode: int) -> None:
-        client = await self._ensure_client()
-        await client.set_mode(mode)
-        self.async_set_updated_data(client.state)
+        await self._run_with_retry("set_mode", lambda client: client.set_mode(mode))
 
     async def async_set_suspend(self, suspend: bool) -> None:
-        client = await self._ensure_client()
-        await client.set_suspend(suspend)
-        self.async_set_updated_data(client.state)
+        await self._run_with_retry("set_suspend", lambda client: client.set_suspend(suspend))
 
     async def async_set_lamp_ring(self, enabled: bool | None = None, brightness: int | None = None) -> None:
-        client = await self._ensure_client()
-        await client.set_lamp_ring(enabled=enabled, brightness=brightness)
-        self.async_set_updated_data(client.state)
+        await self._run_with_retry(
+            "set_lamp_ring",
+            lambda client: client.set_lamp_ring(enabled=enabled, brightness=brightness),
+        )
 
     async def async_set_dnd(self, enabled: bool) -> None:
-        client = await self._ensure_client()
-        await client.set_dnd(enabled)
-        self.async_set_updated_data(client.state)
+        await self._run_with_retry("set_dnd", lambda client: client.set_dnd(enabled))
 
     async def async_set_lock(self, locked: bool) -> None:
-        client = await self._ensure_client()
-        await client.set_lock(locked)
-        self.async_set_updated_data(client.state)
+        await self._run_with_retry("set_lock", lambda client: client.set_lock(locked))
 
     async def async_set_smart_inductive(self, enabled: bool) -> None:
-        client = await self._ensure_client()
-        await client.set_smart_inductive(enabled)
-        self.async_set_updated_data(client.state)
+        await self._run_with_retry(
+            "set_smart_inductive",
+            lambda client: client.set_smart_inductive(enabled),
+        )
 
     async def async_set_battery_inductive(self, enabled: bool) -> None:
-        client = await self._ensure_client()
-        await client.set_battery_inductive(enabled)
-        self.async_set_updated_data(client.state)
+        await self._run_with_retry(
+            "set_battery_inductive",
+            lambda client: client.set_battery_inductive(enabled),
+        )
 
     async def async_set_smart_times(
         self, working_minutes: int | None = None, sleep_minutes: int | None = None
     ) -> None:
-        client = await self._ensure_client()
-        await client.set_smart_times(working_minutes, sleep_minutes)
-        self.async_set_updated_data(client.state)
+        await self._run_with_retry(
+            "set_smart_times",
+            lambda client: client.set_smart_times(working_minutes, sleep_minutes),
+        )
 
     async def async_set_battery_times(
         self, working_seconds: int | None = None, sleep_seconds: int | None = None
     ) -> None:
-        client = await self._ensure_client()
-        await client.set_battery_times(working_seconds, sleep_seconds)
-        self.async_set_updated_data(client.state)
+        await self._run_with_retry(
+            "set_battery_times",
+            lambda client: client.set_battery_times(working_seconds, sleep_seconds),
+        )
 
     async def async_reset_filter(self) -> None:
-        client = await self._ensure_client()
-        await client.reset_filter()
-        self.async_set_updated_data(client.state)
+        await self._run_with_retry("reset_filter", lambda client: client.reset_filter())
 
     async def async_write_light_schedule(
         self,
         enabled: bool,
         entries: list[tuple[int, int, int]] | None = None,
     ) -> None:
-        client = await self._ensure_client()
-        await client.write_light_schedule(enabled=enabled, entries=entries)
-        self.async_set_updated_data(client.state)
+        await self._run_with_retry(
+            "write_light_schedule",
+            lambda client: client.write_light_schedule(enabled=enabled, entries=entries),
+        )
 
     async def async_write_dnd_schedule(
         self,
         enabled: bool,
         entries: list[tuple[int, int, int]] | None = None,
     ) -> None:
-        client = await self._ensure_client()
-        await client.write_dnd_schedule(enabled=enabled, entries=entries)
-        self.async_set_updated_data(client.state)
+        await self._run_with_retry(
+            "write_dnd_schedule",
+            lambda client: client.write_dnd_schedule(enabled=enabled, entries=entries),
+        )
 
     async def async_sync_history(self) -> None:
-        client = await self._ensure_client()
-        await client.sync_history()
-        self.async_set_updated_data(client.state)
+        await self._run_with_retry("sync_history", lambda client: client.sync_history())

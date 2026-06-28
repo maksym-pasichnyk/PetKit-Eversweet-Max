@@ -82,6 +82,51 @@ class ClientTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(client._next_seq(), 0)  # noqa: SLF001
         self.assertEqual(client._next_seq(), 1)  # noqa: SLF001
 
+    def test_security_check_accepts_six_or_eight_byte_secret(self):
+        self.assertEqual(protocol.build_security_check(b"\x01" * 6), b"\x01" * 6)
+        self.assertEqual(protocol.build_security_check(b"\x02" * 8), b"\x02" * 8)
+        with self.assertRaises(ValueError):
+            protocol.build_security_check(b"\x03" * 7)
+
+    def test_six_byte_secret_generates_derived_security_payloads(self):
+        secret = b"\x01\x02\x03\x04\x05\x06"
+        payloads = client_mod._security_payloads(secret, 100042574)  # noqa: SLF001
+
+        self.assertEqual(len(payloads), 7)
+        self.assertEqual(payloads[0], secret + b"\x00\x00")
+        self.assertEqual(payloads[1], b"\x00\x00" + secret)
+        self.assertEqual(payloads[-1], secret)
+        self.assertTrue(all(len(payload) in (6, 8) for payload in payloads))
+
+    async def test_refresh_all_continues_after_nonfatal_refresh_error(self):
+        client = self._make_client()
+
+        async def fake_refresh_running() -> protocol.RunningInfo:
+            client.state.running = protocol.RunningInfo(mode=const.MODE_STANDARD)
+            return client.state.running
+
+        async def fake_refresh_settings() -> protocol.SettingsInfo:
+            client.state.settings = protocol.SettingsInfo()
+            return client.state.settings
+
+        async def fake_refresh_battery() -> protocol.BatteryInfo:
+            raise client_mod.CTW3Error("transient gatt error")
+
+        async def fake_refresh_schedule() -> protocol.ScheduleInfo:
+            raise client_mod.CTW3Timeout("timeout")
+
+        client.refresh_running = fake_refresh_running  # type: ignore[method-assign]
+        client.refresh_settings = fake_refresh_settings  # type: ignore[method-assign]
+        client.refresh_battery = fake_refresh_battery  # type: ignore[method-assign]
+        client.refresh_light_schedule = fake_refresh_schedule  # type: ignore[method-assign]
+        client.refresh_dnd_schedule = fake_refresh_schedule  # type: ignore[method-assign]
+
+        state = await client.refresh_all()
+
+        self.assertIs(state, client.state)
+        self.assertIsNotNone(state.running)
+        self.assertIsNotNone(state.settings)
+
     async def test_dispatch_matches_pending_by_cmd_and_sequence(self):
         client = self._make_client()
         future: asyncio.Future[protocol.Frame] = asyncio.get_running_loop().create_future()

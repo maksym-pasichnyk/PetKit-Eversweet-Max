@@ -11,7 +11,7 @@
             },
             "confirm": {
                 "title": "Authenticate {name}",
-                "description": "Enter the 16-character hex secret issued by the PetKit cloud after device binding.\n\nDevice: {name} ({address})",
+                "description": "Enter the 12- or 16-character hex secret issued by the PetKit cloud after device binding.\n\nDevice: {name} ({address})",
                 "data": {
                     "secret": "Secret (hex)",
                     "name": "Device name"
@@ -19,7 +19,7 @@
             }
         },
         "error": {
-            "invalid_secret": "Secret must be 16 hex characters (8 bytes)."
+            "invalid_secret": "Secret must be 12 or 16 hex characters (6 or 8 bytes)."
         },
         "abort": {
             "already_configured": "Device is already configured.",

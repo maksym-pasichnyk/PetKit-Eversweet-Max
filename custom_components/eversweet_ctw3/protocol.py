@@ -207,8 +207,8 @@ def workdata_timestamp_to_posix(work_time_2000: int) -> int:
 
 
 def build_security_check(secret: bytes) -> bytes:
-    if len(secret) != 8:
-        raise ValueError("secret must be 8 bytes (16 hex chars)")
+    if len(secret) not in (6, 8):
+        raise ValueError("secret must be 6 or 8 bytes (12 or 16 hex chars)")
     return bytes(secret)
 
 

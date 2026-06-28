@@ -33,8 +33,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     except ValueError as err:
         _LOGGER.error("Invalid secret in config entry: %s", err)
         return False
-    if len(secret) != 8:
-        _LOGGER.error("Secret must be 8 bytes (16 hex chars), got %d", len(secret))
+    if len(secret) not in (6, 8):
+        _LOGGER.error("Secret must be 6 or 8 bytes (12 or 16 hex chars), got %d", len(secret))
         return False
 
     coordinator = CTW3Coordinator(

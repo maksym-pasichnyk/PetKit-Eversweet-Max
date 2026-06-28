@@ -114,6 +114,23 @@ def _cmd_label(cmd: int) -> str:
     return f"{_CMD_NAMES.get(cmd, 'unknown')}({cmd})"
 
 
+def _security_payloads(secret: bytes, device_id: int) -> list[bytes]:
+    """Return plausible CTW3 security-check payloads for a cloud secret."""
+    if len(secret) != 6:
+        return [secret]
+
+    device_id_bytes = int(device_id).to_bytes(4, "big", signed=False)
+    return [
+        secret + b"\x00\x00",
+        b"\x00\x00" + secret,
+        secret + device_id_bytes[-2:],
+        device_id_bytes[-2:] + secret,
+        secret + device_id_bytes[:2],
+        device_id_bytes[:2] + secret,
+        secret,
+    ]
+
+
 class CTW3Error(Exception):
     """Base error for CTW3 client."""
 
@@ -439,14 +456,30 @@ class CTW3BleClient:
 
             # 2. Security check (cmd 86)
             _LOGGER.info("CTW3 handshake step 2/6: security check")
-            frame = await self._request(
-                CMD_SECURITY_CHECK,
-                build_security_check(self._secret),
-            )
-            if not frame.data or frame.data[0] != 1:
+            security_payloads = _security_payloads(self._secret, info.device_id)
+            security_ok = False
+            for index, payload in enumerate(security_payloads, start=1):
+                frame = await self._request(
+                    CMD_SECURITY_CHECK,
+                    build_security_check(payload),
+                )
+                if frame.data and frame.data[0] == 1:
+                    security_ok = True
+                    _LOGGER.info(
+                        "CTW3 security check passed using payload variant %d/%d",
+                        index,
+                        len(security_payloads),
+                    )
+                    break
+                _LOGGER.debug(
+                    "CTW3 security payload variant %d/%d failed for %s",
+                    index,
+                    len(security_payloads),
+                    self._name,
+                )
+            if not security_ok:
                 _LOGGER.warning("CTW3 security check failed for %s", self._name)
                 raise CTW3AuthError("security check failed (wrong secret?)")
-            _LOGGER.info("CTW3 security check passed")
 
             # 3. Time sync (cmd 84)
             _LOGGER.info("CTW3 handshake step 3/6: sync time")
@@ -485,17 +518,22 @@ class CTW3BleClient:
             return await self._refresh_all_unlocked()
 
     async def _refresh_all_unlocked(self) -> CTW3State:
-        await self.refresh_battery()
-        await self.refresh_running()
-        await self.refresh_settings()
-        try:
-            await self.refresh_light_schedule()
-        except CTW3Timeout:
-            _LOGGER.debug("Light schedule request timed out (ignored)")
-        try:
-            await self.refresh_dnd_schedule()
-        except CTW3Timeout:
-            _LOGGER.debug("DND schedule request timed out (ignored)")
+        for label, refresh in (
+            ("running", self.refresh_running),
+            ("settings", self.refresh_settings),
+            ("battery", self.refresh_battery),
+            ("light schedule", self.refresh_light_schedule),
+            ("DND schedule", self.refresh_dnd_schedule),
+        ):
+            try:
+                await refresh()
+            except CTW3Error as err:
+                _LOGGER.debug(
+                    "CTW3 %s refresh failed for %s; continuing with last known state: %s",
+                    label,
+                    self._name,
+                    err,
+                )
         self._emit_state()
         return self.state
 
