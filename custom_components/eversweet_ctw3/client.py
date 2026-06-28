@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from contextlib import suppress
 from dataclasses import dataclass, field
 from typing import Awaitable, Callable
 
@@ -219,31 +220,40 @@ class CTW3BleClient:
             if self._client is not None and self._client.is_connected:
                 return
             _LOGGER.info("Connecting to CTW3 device %s (%s)", self._name, self._device.address)
-            self._client = await establish_connection(
-                BleakClientWithServiceCache,
-                self._device,
-                self._name,
-                disconnected_callback=self._handle_disconnect,
-                max_attempts=3,
-                timeout=CONNECT_TIMEOUT,
-            )
-            # MTU on Android/Linux is negotiated automatically; bleak exposes it as a property
             try:
-                # Some backends allow explicit negotiation
-                await self._client._backend._acquire_mtu()  # type: ignore[attr-defined]
-            except Exception:  # pragma: no cover - backend-specific
-                pass
-            try:
-                for service in self._client.services:
-                    for char in service.characteristics:
-                        _LOGGER.debug(
-                            "GATT characteristic %s properties=%s",
-                            char.uuid,
-                            ",".join(char.properties),
-                        )
-            except Exception:  # pragma: no cover - backend-specific
-                _LOGGER.debug("Could not inspect GATT services", exc_info=True)
-            await self._client.start_notify(DATA_CHAR_UUID, self._on_notify)
+                self._client = await establish_connection(
+                    BleakClientWithServiceCache,
+                    self._device,
+                    self._name,
+                    disconnected_callback=self._handle_disconnect,
+                    max_attempts=3,
+                    timeout=CONNECT_TIMEOUT,
+                )
+                # MTU on Android/Linux is negotiated automatically; bleak exposes it as a property
+                try:
+                    # Some backends allow explicit negotiation
+                    await self._client._backend._acquire_mtu()  # type: ignore[attr-defined]
+                except Exception:  # pragma: no cover - backend-specific
+                    pass
+                try:
+                    for service in self._client.services:
+                        for char in service.characteristics:
+                            _LOGGER.debug(
+                                "GATT characteristic %s properties=%s",
+                                char.uuid,
+                                ",".join(char.properties),
+                            )
+                except Exception:  # pragma: no cover - backend-specific
+                    _LOGGER.debug("Could not inspect GATT services", exc_info=True)
+                await self._client.start_notify(DATA_CHAR_UUID, self._on_notify)
+            except BleakError as err:
+                client = self._client
+                self._client = None
+                if client is not None:
+                    with suppress(Exception):
+                        if client.is_connected:
+                            await client.disconnect()
+                raise CTW3Error(f"BLE connect failed: {err}") from err
             # Some BLE backends report CCCD writes complete before notification
             # delivery is fully settled. A short pause avoids losing the first
             # fast response in local bridge / CLI sessions.

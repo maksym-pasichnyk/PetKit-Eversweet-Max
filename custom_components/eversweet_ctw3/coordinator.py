@@ -106,12 +106,12 @@ class CTW3Coordinator(DataUpdateCoordinator[CTW3State]):
         )
 
     async def _async_update_data(self) -> CTW3State:
-        last_err: CTW3Error | None = None
+        last_err: Exception | None = None
         for attempt in range(2):
-            client = await self._ensure_client()
             try:
+                client = await self._ensure_client()
                 return await client.refresh_all()
-            except CTW3Error as err:
+            except (CTW3Error, UpdateFailed) as err:
                 last_err = err
                 await self._safe_disconnect()
                 if attempt == 0:
@@ -123,7 +123,15 @@ class CTW3Coordinator(DataUpdateCoordinator[CTW3State]):
                     )
                     await asyncio.sleep(0.5)
                     continue
-                raise UpdateFailed(str(err)) from err
+                break
+        if self.data is not None:
+            _LOGGER.warning(
+                "CTW3 update failed for %s (%s); keeping last known state: %s",
+                self._device_name,
+                self._address,
+                last_err,
+            )
+            return self.data
         raise UpdateFailed(str(last_err))
 
     async def _safe_disconnect(self) -> None:
