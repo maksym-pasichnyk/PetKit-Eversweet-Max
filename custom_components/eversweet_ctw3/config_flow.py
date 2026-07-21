@@ -30,12 +30,12 @@ def _is_ctw3(name: str | None) -> bool:
 
 
 def _normalize_secret(value: str) -> bytes:
-    """Accept hex (16 chars) with optional spaces/colons/0x-prefix; return 8 bytes."""
+    """Accept hex with optional spaces/colons/0x-prefix; return 6 or 8 bytes."""
     s = value.strip().replace(" ", "").replace(":", "")
     if s.lower().startswith("0x"):
         s = s[2:]
-    if len(s) != 16:
-        raise vol.Invalid("secret must be 16 hex characters (8 bytes)")
+    if len(s) not in (12, 16):
+        raise vol.Invalid("secret must be 12 or 16 hex characters (6 or 8 bytes)")
     try:
         return bytes.fromhex(s)
     except ValueError as err:
